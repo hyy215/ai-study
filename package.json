@@ -1,0 +1,20 @@
+{
+  "name": "ai-study",
+  "version": "1.0.0",
+  "description": "AI Study",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyy215/ai-study.git"
+  },
+  "author": "Huang Yanyan",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
