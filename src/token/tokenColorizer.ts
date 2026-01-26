@@ -2,7 +2,7 @@ import { AutoTokenizer } from '@huggingface/transformers';
 import chalk from 'chalk';
 import * as readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
-import { encoding_for_model, type TiktokenModel } from 'tiktoken';
+import { encoding_for_model } from 'tiktoken';
 
 /**
  * Tokenizer CLI Tool
@@ -30,10 +30,17 @@ interface TokenizerStrategy {
 class HuggingFaceTokenizer implements TokenizerStrategy {
     name = '@huggingface/transformers (Xenova/gpt2)';
     private tokenizer: any;
+    private byteDecoder: Record<string, number> | null = null;
 
     async init() {
         console.log(chalk.gray('Loading tokenizer (Xenova/gpt2)...'));
         this.tokenizer = await AutoTokenizer.from_pretrained('Xenova/gpt2');
+        
+        // Try to get byte_decoder for correct byte-level decoding
+        if (this.tokenizer.decoder && this.tokenizer.decoder.byte_decoder) {
+            this.byteDecoder = this.tokenizer.decoder.byte_decoder;
+        }
+        
         console.log(chalk.green('✔ Tokenizer loaded successfully!'));
     }
 
@@ -43,11 +50,49 @@ class HuggingFaceTokenizer implements TokenizerStrategy {
         const ids = Array.from(input_ids.data as any);
         
         const tokens: string[] = [];
-        for (let i = 0; i < ids.length; i++) {
-            const id = ids[i];
-            const tokenStr = this.tokenizer.decode([id as any]);
-            tokens.push(tokenStr);
+        
+        // If we have byte_decoder, we can do correct streaming decode
+        if (this.byteDecoder) {
+            // @ts-ignore
+            const tokenStrings = this.tokenizer.model.convert_ids_to_tokens(ids);
+            const decoder = new TextDecoder("utf-8");
+            
+            for (const tokenStr of tokenStrings) {
+                const bytes: number[] = [];
+                for (const char of tokenStr) {
+                    // @ts-ignore
+                    const byteVal = this.byteDecoder[char];
+                    if (byteVal !== undefined) {
+                        bytes.push(Number(byteVal));
+                    } else {
+                        // Fallback
+                        bytes.push(char.codePointAt(0) || 0);
+                    }
+                }
+                const decodedStr = decoder.decode(new Uint8Array(bytes), { stream: true });
+                tokens.push(decodedStr);
+            }
+            
+             // Flush
+            const last = decoder.decode();
+            if (last) {
+                tokens.push(last);
+                // We don't have an ID for the flush, but that's fine for visualization
+                // Or we could append to the last token if we wanted strictly 1:1
+                // For now let's just push it, but we need to adjust ids array length or handle mismatch
+                if (ids.length < tokens.length) {
+                    ids.push(-1);
+                }
+            }
+        } else {
+            // Fallback to standard decode (might produce  for split chars)
+            for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
+                const tokenStr = this.tokenizer.decode([id as any]);
+                tokens.push(tokenStr);
+            }
         }
+        
         return { tokens, ids };
     }
 }
@@ -113,7 +158,7 @@ async function main() {
 
         while (true) {
             const answer = await rl.question(chalk.bold('Input > '));
-            
+           
             if (answer.trim().toLowerCase() === 'exit') {
                 break;
             }
@@ -121,7 +166,7 @@ async function main() {
             if (!answer.trim()) {
                 continue;
             }
-
+ console.log(answer);
             const { tokens, ids } = await strategy.tokenize(answer);
 
             let visualOutput = '';
