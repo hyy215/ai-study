@@ -1,42 +1,42 @@
-# Token Colorizer
+# Token 着色器
 
-This tool visualizes how a Transformer model (specifically GPT-2 by default) tokenizes text. It assigns different background colors to each token so you can clearly see the boundaries between them.
+该工具可视化 Transformer 模型（默认特指 GPT-2）如何对文本进行 Token 化。它为每个 Token 分配不同的背景颜色，以便您可以清楚地看到它们之间的边界。
 
-## Prerequisites
+## 前提条件
 
-Ensure you have installed the project dependencies:
+确保您已安装项目依赖项：
 
 ```bash
 pnpm install
 ```
 
-## How to Run
+## 如何运行
 
-You can run this tool using `tsx` (TypeScript Executor):
+您可以使用 `tsx` (TypeScript Executor) 运行此工具：
 
 ```bash
 npx tsx src/token/tokenColorizer.ts
 ```
 
-## Usage
+## 使用方法
 
-1. Run the command above.
-2. Wait for the tokenizer model (`Xenova/gpt2`) to download/load (first time might take a few seconds).
-3. Type any sentence at the `Input >` prompt and press Enter.
-4. View the colorized output and the list of tokens with their IDs.
-5. Type `exit` to quit.
+1. 运行上述命令。
+2. 等待分词器模型 (`Xenova/gpt2`) 下载/加载（首次运行可能需要几秒钟）。
+3. 在 `Input >` 提示符处输入任何句子并按回车。
+4. 查看着色后的输出以及带有 ID 的 Token 列表。
+5. 输入 `exit` 退出。
 
-## Example
+## 示例
 
-**Input:**
+**输入:**
 ```
 Hello world, this is a test.
 ```
 
-**Output:**
-The tool will display "Hello", " world", ",", " this", " is", " a", " test", "." with alternating background colors.
+**输出:**
+该工具将显示 "Hello", " world", ",", " this", " is", " a", " test", "." 并带有交替的背景颜色。
 
-## Technologies
+## 技术栈
 
-- **[@huggingface/transformers](https://www.npmjs.com/package/@huggingface/transformers)**: For running the tokenizer in Node.js.
-- **[chalk](https://www.npmjs.com/package/chalk)**: For terminal styling and coloring.
+- **[@huggingface/transformers](https://www.npmjs.com/package/@huggingface/transformers)**: 用于在 Node.js 中运行分词器。
+- **[chalk](https://www.npmjs.com/package/chalk)**: 用于终端样式美化和着色。

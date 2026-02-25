@@ -2,76 +2,76 @@ import { AutoModelForCausalLM, AutoTokenizer, pipeline } from '@huggingface/tran
 import chalk from 'chalk';
 
 /**
- * Model Example CLI Tool
+ * 模型示例 CLI 工具
  * 
- * This script demonstrates the transformer decoder-only model architecture
- * and manual next-token prediction, inspired by Lesson 6 of the 
- * "How Transformer LLMs Work" course.
+ * 此脚本演示了 Transformer decoder-only 模型架构
+ * 以及手动进行下一个 token 的预测，灵感来自
+ * "How Transformer LLMs Work" 课程的第 6 课。
  */
 
 async function main() {
-    console.log(chalk.cyan.bold('\n--- Lesson 6: Model Example (TypeScript Version) ---\n'));
+    console.log(chalk.cyan.bold('\n--- 模型示例 (TypeScript 版) ---\n'));
 
-    // 1. Setup - Loading Model and Tokenizer
-    // Using distilgpt2 as it's the most reliable small model for this environment
+    // 1. 设置 - 加载模型和分词器
+    // 使用 distilgpt2，因为它是此环境下最可靠的小型模型
     const modelId = 'Xenova/distilgpt2';
     
-    console.log(chalk.gray(`Loading model and tokenizer (${modelId})...`));
+    console.log(chalk.gray(`正在加载模型和分词器 (${modelId})...`));
     const tokenizer = await AutoTokenizer.from_pretrained(modelId);
     const model = await AutoModelForCausalLM.from_pretrained(modelId, {
         dtype: 'fp32', 
     });
-    console.log(chalk.green('✔ Model and Tokenizer loaded successfully!\n'));
+    console.log(chalk.green('✔ 模型和分词器加载成功！\n'));
 
-    // 2. Generating a Text Response (Using Pipeline)
-    console.log(chalk.blue.bold('Step 1: Generating text using a pipeline'));
+    // 2. 生成文本响应 (使用 Pipeline)
+    console.log(chalk.blue.bold('步骤 1: 使用 pipeline 生成文本'));
     const generator = await pipeline('text-generation', modelId, {
         dtype: 'fp32',
     });
     
     const prompt = "France: Paris; Germany: Berlin; Italy: Rome; Spain:";
-    console.log(chalk.white(`Prompt: "${prompt}"`));
+    console.log(chalk.white(`提示词: "${prompt}"`));
     
-    console.log(chalk.gray('Generating...'));
+    console.log(chalk.gray('正在生成...'));
     const output = await generator(prompt, {
         max_new_tokens: 1,
         do_sample: false,
     });
     
     // @ts-ignore
-    console.log(chalk.yellow(`Pipeline Output: "${output[0].generated_text}"\n`));
+    console.log(chalk.yellow(`Pipeline 输出: "${output[0].generated_text}"\n`));
 
-    // 3. Exploring Model Architecture (Conceptual)
-    console.log(chalk.blue.bold('Step 2: Exploring Model Architecture'));
-    // In Transformers.js, we can see some config info
+    // 3. 探索模型架构 (概念性)
+    console.log(chalk.blue.bold('步骤 2: 探索模型架构'));
+    // 在 Transformers.js 中，我们可以查看一些配置信息
     const config = model.config as any;
-    console.log(chalk.white(`Vocabulary Size: ${config.vocab_size}`));
-    console.log(chalk.white(`Hidden Size (Embedding Dim): ${config.n_embd || config.hidden_size}`));
-    console.log(chalk.white(`Number of Layers: ${config.n_layer || config.num_hidden_layers}\n`));
+    console.log(chalk.white(`词汇表大小: ${config.vocab_size}`));
+    console.log(chalk.white(`隐藏层大小 (嵌入维度): ${config.n_embd || config.hidden_size}`));
+    console.log(chalk.white(`层数: ${config.n_layer || config.num_hidden_layers}\n`));
 
-    // 4. Manual Single Token Prediction
-    console.log(chalk.blue.bold('Step 3: Manual Next-Token Prediction'));
+    // 4. 手动单 Token 预测
+    console.log(chalk.blue.bold('步骤 3: 手动预测下一个 Token'));
     
-    // a. Tokenize the input prompt
-    console.log(chalk.gray('Tokenizing prompt...'));
+    // a. 对输入提示词进行 Token 化
+    console.log(chalk.gray('正在对提示词进行 Token 化...'));
     const inputs = await tokenizer(prompt);
-    console.log(chalk.white(`Input IDs: [${inputs.input_ids.data}]`));
+    console.log(chalk.white(`输入 ID: [${inputs.input_ids.data}]`));
     
-    // b. Model Inference
-    console.log(chalk.gray('Running model inference...'));
-    // Pass all inputs (input_ids, attention_mask, etc.) to the model
+    // b. 模型推理
+    console.log(chalk.gray('正在运行模型推理...'));
+    // 将所有输入 (input_ids, attention_mask 等) 传递给模型
     const result = await model(inputs);
-    const logits = result.logits; // Shape: [batch, sequence_length, vocab_size]
+    const logits = result.logits; // 形状: [batch, sequence_length, vocab_size]
     
-    console.log(chalk.white(`Logits Shape: [${logits.dims}]`));
+    console.log(chalk.white(`Logits 形状: [${logits.dims}]`));
 
-    // c. Get the last token's logits
-    // logits.data is a Float32Array
-    // We want the last vector in the sequence dimension
+    // c. 获取最后一个 token 的 logits
+    // logits.data 是一个 Float32Array
+    // 我们想要序列维度中的最后一个向量
     const [, seqLen, vocabSize] = logits.dims;
     const lastTokenLogits = logits.data.slice((seqLen - 1) * vocabSize, seqLen * vocabSize);
     
-    // d. Find the token ID with the highest probability (Argmax)
+    // d. 找到概率最高的 token ID (Argmax)
     let maxVal = -Infinity;
     let tokenId = -1;
     for (let i = 0; i < lastTokenLogits.length; i++) {
@@ -81,15 +81,15 @@ async function main() {
         }
     }
     
-    console.log(chalk.white(`Predicted Token ID: ${tokenId}`));
+    console.log(chalk.white(`预测的 Token ID: ${tokenId}`));
 
-    // e. Decode the predicted token ID
+    // e. 解码预测的 token ID
     const predictedToken = tokenizer.decode([tokenId]);
-    console.log(chalk.green.bold(`\nPredicted Next Token: "${predictedToken}"`));
+    console.log(chalk.green.bold(`\n预测的下一个 Token: "${predictedToken}"`));
     
-    console.log(chalk.cyan.bold('\n--- End of Lesson 6 Example ---\n'));
+    console.log(chalk.cyan.bold('\n--- 第 6 课示例结束 ---\n'));
 }
 
 main().catch(err => {
-    console.error(chalk.red('An error occurred:'), err);
+    console.error(chalk.red('发生错误:'), err);
 });
