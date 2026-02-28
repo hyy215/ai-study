@@ -10,7 +10,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "build:viz": "tsc -p src/sampling-viz/tsconfig.viz.json && cp src/sampling-viz/index.html docs/sampling-viz/ && cp src/sampling-viz/style.css docs/sampling-viz/",
+    "preview:viz": "npm run build:viz && python3 -m http.server 8080 -d docs/sampling-viz"
   },
   "devDependencies": {
     "@types/node": "^25.0.9",

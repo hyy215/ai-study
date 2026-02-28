@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM 采样参数可视化</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>LLM 采样参数可视化</h1>
+        <p>探索 Temperature, Top-K, 和 Top-P 如何影响 Token 的概率分布。</p>
+
+        <div class="prompt-box" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #2196f3;">
+            <h3 style="margin: 0 0 10px 0; color: #1565c0;">当前输入 (Prompt):</h3>
+            <p style="font-size: 1.2em; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; margin: 0;">"人工智能将改变我们的 <span style="border-bottom: 2px solid #2196f3; color: #2196f3; font-weight: bold;">[?]</span>"</p>
+        </div>
+
+        <div class="logits-display" style="margin-bottom: 30px; padding: 15px; background: #fff3e0; border-radius: 8px; border-left: 5px solid #ff9800;">
+            <h3 style="margin: 0 0 10px 0; color: #e65100;">原始分数与初始概率 (Raw Logits & Initial Prob):</h3>
+            <p style="margin: 0 0 10px 0; font-size: 0.9em; color: #666;">
+                展示模型输出的原始 Logits 分数，以及经 Softmax (T=1.0) 转换后的初始概率。<br>
+                <span style="font-size: 0.85em; color: #e65100;">(注意：Logits 的微小差异经过 Softmax 指数运算后会被显著放大)</span>
+            </p>
+            <div id="logits-table-container" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <!-- Logits table will be injected here -->
+            </div>
+        </div>
+        
+        <div class="main-layout">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="temperature">Temperature (温度): <span id="temp-val">1.0</span></label>
+                    <input type="range" id="temperature" min="0" max="2.0" step="0.1" value="1.0">
+                    <p class="desc">控制随机性。低 = 确定性高，高 = 更有创意/随机。</p>
+                </div>
+
+                <div class="control-group">
+                    <label for="top-k">Top-K: <span id="top-k-val">0 (关闭)</span></label>
+                    <input type="range" id="top-k" min="0" max="6" step="1" value="0">
+                    <p class="desc">限制仅从前 K 个 Token 中选择。0 表示禁用。</p>
+                </div>
+
+                <div class="control-group">
+                    <label for="top-p">Top-P (Nucleus): <span id="top-p-val">1.0 (关闭)</span></label>
+                    <input type="range" id="top-p" min="0.0" max="1.0" step="0.05" value="1.0">
+                    <p class="desc">选择累积概率 >= P 的 Token 集合。</p>
+                </div>
+                
+                <div class="control-group">
+                    <button id="reset-btn">重置所有</button>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="probChart"></canvas>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>工作原理:</h3>
+            <ol>
+                <li><strong>Logits:</strong> 模型输出的原始分数。</li>
+                <li><strong>Temperature:</strong> 在 Softmax 之前缩放 Logits。 <code>logit / temp</code>。</li>
+                <li><strong>Softmax:</strong> 将缩放后的 Logits 转换为概率（总和为 1）。</li>
+                <li><strong>Top-K / Top-P:</strong> 过滤掉低概率的 Token，然后重新归一化剩余的概率。</li>
+            </ol>
+        </div>
+    </div>
+
+    <script type="module" src="sampling.js"></script>
+</body>
+</html>
