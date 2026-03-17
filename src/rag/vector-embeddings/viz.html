@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>PCA 向量可视化</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 20px; }
+        #chart { width: 100%; height: 600px; border: 1px solid #ddd; }
+        .controls { margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 5px; }
+        .info { color: #666; font-size: 0.9em; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>PCA 降维可视化结果</h1>
+    <div class="controls">
+        <p>这是从 <code>demo.ts</code> 运行生成的向量数据。</p>
+        <p class="info">如果未看到最新数据，请先运行 <code>npx tsx src/rag/vector-embeddings/demo.ts</code>，然后刷新此页面。</p>
+        
+        <div style="margin-top: 15px; padding: 10px; background-color: #e8f4f8; border-left: 4px solid #1f77b4; font-size: 0.9em;">
+            <strong>🤔 为什么 PCA 图上有些点看起来很近，但实际相似度不高？</strong>
+            <p>这是一个常见的视觉错觉。原因如下：</p>
+            <ol>
+                <li><strong>降维造成的信息丢失</strong>：我们将 384 维的高维向量强行压缩到了 2 维。绝大部分信息（方差）在这个过程中丢失了。</li>
+                <li><strong>投影效应</strong>：就像三维空间中的两颗星星，一颗在你头顶，一颗在你前方，它们投影到地面上可能重合，但实际上距离很远。</li>
+                <li><strong>PCA 的关注点</strong>：PCA 关注的是“方差最大”（差异最大）的方向，而不是“语义最相似”的方向。</li>
+            </ol>
+            <p><strong>结论</strong>：PCA 图主要用于定性观察聚类趋势。要判断真实的语义距离，必须以代码中输出的 <code>Cosine Similarity</code> 计算结果为准。</p>
+        </div>
+    </div>
+    <div id="chart"></div>
+
+    <!-- 引入生成的数据 -->
+    <script src="./viz-data.js"></script>
+
+    <script>
+        // 检查数据是否加载
+        if (typeof vizData === 'undefined') {
+            document.getElementById('chart').innerHTML = '<div style="padding: 20px; color: red;">未找到数据文件 viz-data.js。请先运行 demo.ts 生成数据。</div>';
+        } else {
+            // 初始化图表
+            const chart = echarts.init(document.getElementById('chart'));
+
+            // 准备数据系列
+            const seriesData = vizData.map(item => {
+                return {
+                    name: item.label,
+                    value: [item.x, item.y],
+                    itemStyle: {
+                        color: item.category === 'Query' ? '#ff0000' : '#1f77b4',
+                        // 如果是 Query，点大一点
+                        opacity: 0.8
+                    },
+                    symbolSize: item.category === 'Query' ? 20 : 15,
+                    // 自定义属性，方便在 tooltip 中使用
+                    category: item.category
+                };
+            });
+
+            const option = {
+                title: { text: '文本向量分布 (PCA 2D Projection)' },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function (params) {
+                        return `<strong>${params.data.category}: ${params.name}</strong><br/>
+                                X: ${params.value[0].toFixed(4)}<br/>
+                                Y: ${params.value[1].toFixed(4)}`;
+                    }
+                },
+                xAxis: { name: 'Principal Component 1', splitLine: { show: true } },
+                yAxis: { name: 'Principal Component 2', splitLine: { show: true } },
+                dataZoom: [
+                    { type: 'inside' }, // 鼠标滚轮缩放
+                    { type: 'slider' }  // 滑块缩放
+                ],
+                series: [{
+                    type: 'scatter',
+                    data: seriesData,
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: function(params) {
+                            // 只显示简短标签，避免重叠太严重
+                            const label = params.name;
+                            return label.length > 8 ? label.substring(0, 8) + '...' : label;
+                        },
+                        fontSize: 10
+                    }
+                }]
+            };
+
+            chart.setOption(option);
+            
+            // 响应式调整
+            window.addEventListener('resize', () => chart.resize());
+        }
+    </script>
+</body>
+</html>
