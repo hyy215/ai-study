@@ -20,6 +20,10 @@ src/rag/
 └── retrieval-metrics/       # 检索评估模块
     ├── evaluate.ts          # 评估执行脚本（包含模拟数据集）
     └── metrics.ts           # 核心指标实现（Precision@K, Recall@K）
+└── weaviate/                # Weaviate 向量数据库集成示例
+    ├── inference-server.ts  # 本地推理服务（提供向量化与重排 API）
+    ├── weaviate-main.ts     # Weaviate 核心逻辑（Schema、导入、搜索）
+    └── mock-data.ts         # 测试数据
 ```
 
 ## 核心功能
@@ -42,6 +46,17 @@ src/rag/
 
 ### 4. 数学基础 (`vector-embeddings/vectorUtils.ts`)
 - 实现了点积（Dot Product）、L2 范数（Norm）、余弦相似度和欧氏距离的底层算法。
+
+### 5. Weaviate 向量数据库集成 (`weaviate/weaviate-main.ts`)
+- **嵌入式 Weaviate (Embedded Weaviate)**：在 Node.js 中直接启动 Weaviate 实例，无需 Docker。
+- **自定义推理服务 (`weaviate/inference-server.ts`)**：
+  - 使用 `@huggingface/transformers` 搭建本地 API。
+  - 模拟 Weaviate 的 `text2vec-transformers` 和 `reranker-transformers` 模块接口。
+- **高级搜索功能展示**：
+  - **标量筛选 (Scalar Filtering)**：类似于 SQL 的 `WHERE` 子句。
+  - **BM25 关键字搜索**：传统全文检索。
+  - **混合搜索 (Hybrid Search)**：结合向量语义搜索与 BM25 关键字搜索，并支持 alpha 参数调节权重。
+  - **重排序 (Reranking)**：使用 Cross-Encoder 模型对向量检索结果进行精细排序，提升准确性。
 
 ## 快速开始
 
@@ -75,6 +90,21 @@ npx tsx src/rag/retrieval-metrics/evaluate.ts
 ```
 
 它会输出每个查询在不同 K 值下的 Precision 和 Recall，以及整体平均指标。
+
+### 5. 运行 Weaviate RAG 演示
+该演示包含两个部分：本地推理服务和 Weaviate 主程序。
+
+1. **启动推理服务**（在一个终端窗口中运行）：
+   ```bash
+   npx tsx src/rag/weaviate/inference-server.ts
+   ```
+   等待显示 "🚀 推理服务器运行在 http://127.0.0.1:8080"。
+
+2. **运行 Weaviate 主程序**（在另一个终端窗口中运行）：
+   ```bash
+   npx tsx src/rag/weaviate/weaviate-main.ts
+   ```
+   该脚本将演示数据导入、标量过滤、混合搜索以及重排序等高级功能。
 
 ## 学习笔记
 

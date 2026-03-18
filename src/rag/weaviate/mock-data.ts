@@ -1,0 +1,53 @@
+// 模拟数据
+export const mockData = [
+  {
+    place: "张家界",
+    state: "湖南",
+    description: "以其高耸的石英砂岩柱而闻名，是电影《阿凡达》中哈利路亚山的灵感来源。",
+    best_season_to_visit: "春季或秋季",
+    attractions: "天门山, 森林公园, 玻璃栈道",
+    budget: "中等",
+    user_ratings: 4.8,
+    last_updated: new Date("2023-01-01").toISOString(),
+  },
+  {
+    place: "九寨沟",
+    state: "四川",
+    description: "以多彩的湖泊、瀑布和雪山而闻名的自然保护区。",
+    best_season_to_visit: "秋季",
+    attractions: "五花海, 诺日朗瀑布, 原始森林",
+    budget: "中等",
+    user_ratings: 4.9,
+    last_updated: new Date("2023-02-15").toISOString(),
+  },
+  {
+    place: "上海",
+    state: "上海",
+    description: "中国最大的城市，全球金融中心，拥有著名的外滩天际线。",
+    best_season_to_visit: "春季或秋季",
+    attractions: "外滩, 东方明珠, 迪士尼乐园",
+    budget: "高",
+    user_ratings: 4.7,
+    last_updated: new Date("2023-03-10").toISOString(),
+  },
+  {
+    place: "黄山",
+    state: "安徽",
+    description: "以奇松、怪石、云海、温泉、冬雪'五绝'著称。",
+    best_season_to_visit: "四季皆宜",
+    attractions: "迎客松, 光明顶, 飞来石",
+    budget: "中等",
+    user_ratings: 4.9,
+    last_updated: new Date("2023-04-05").toISOString(),
+  },
+  {
+    place: "成都",
+    state: "四川",
+    description: "大熊猫的故乡，以悠闲的生活方式和辛辣美食闻名。",
+    best_season_to_visit: "春季或秋季",
+    attractions: "大熊猫基地, 宽窄巷子, 锦里",
+    budget: "中等",
+    user_ratings: 4.8,
+    last_updated: new Date("2023-05-20").toISOString(),
+  }
+];
